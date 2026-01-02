@@ -1,0 +1,120 @@
+package com.automatedattendance;
+
+import java.io.IOException;
+import java.util.List;
+
+/**
+ * Main controller class that manages the workflow:
+ * upload → process → email → log
+ */
+public class App {
+    
+    private ExcelReader excelReader;
+    private AttendanceProcessor attendanceProcessor;
+    private EmailSender emailSender;
+    
+    public App() {
+        this.excelReader = new ExcelReader();
+        this.attendanceProcessor = new AttendanceProcessor();
+        this.emailSender = new EmailSender();
+    }
+    
+    /**
+     * Processes an Excel file and sends attendance summary email
+     * @param excelFilePath Path to the Excel file containing attendance data
+     * @return true if the process completes successfully, false otherwise
+     */
+    public boolean processAttendanceFile(String excelFilePath) {
+        LoggerUtil.logInfo("Starting attendance processing for file: " + excelFilePath);
+        
+        try {
+            // 1. Validate Excel file
+            LoggerUtil.logInfo("Validating Excel file: " + excelFilePath);
+            if (!excelReader.validateExcelFile(excelFilePath)) {
+                String errorMsg = "Excel file validation failed. Required columns (P.no, Name, Status) are missing.";
+                LoggerUtil.logError(errorMsg);
+                System.err.println(errorMsg);
+                return false;
+            }
+            LoggerUtil.logInfo("Excel file validation successful");
+            
+            // 2. Read Excel file
+            LoggerUtil.logInfo("Reading Excel file: " + excelFilePath);
+            List<Student> students = excelReader.readExcelFile(excelFilePath);
+            LoggerUtil.logExcelProcessing(excelFilePath, students.size(), 
+                "Successfully read " + students.size() + " student records");
+            LoggerUtil.logInfo("Successfully read " + students.size() + " student records from Excel file");
+            
+            // 3. Process attendance
+            LoggerUtil.logInfo("Processing attendance data");
+            String summaryText = attendanceProcessor.generateSummaryText(students);
+            LoggerUtil.logAttendanceSummary(summaryText);
+            LoggerUtil.logInfo("Attendance processing completed");
+            
+            // 4. Send email
+            LoggerUtil.logInfo("Sending attendance summary email");
+            boolean emailSent = emailSender.sendEmail(Config.getEmailSubject(), summaryText);
+            
+            // Log email status
+            java.util.List<String> recipients = Config.getReceiverEmails();
+            LoggerUtil.logEmailStatus(Config.getEmailSubject(), recipients, emailSent, 
+                emailSent ? "Email sent successfully" : "Failed to send email");
+            
+            if (emailSent) {
+                LoggerUtil.logInfo("Attendance summary email sent successfully to " + 
+                    recipients.size() + " receivers");
+                return true;
+            } else {
+                LoggerUtil.logError("Failed to send attendance summary email");
+                return false;
+            }
+            
+        } catch (IOException e) {
+            String errorMsg = "Error processing Excel file: " + e.getMessage();
+            LoggerUtil.logError(errorMsg, e);
+            System.err.println(errorMsg);
+            return false;
+        } catch (Exception e) {
+            String errorMsg = "Unexpected error during attendance processing: " + e.getMessage();
+            LoggerUtil.logError(errorMsg, e);
+            System.err.println(errorMsg);
+            return false;
+        }
+    }
+    
+    /**
+     * Main method to run the application
+     * @param args Command line arguments - first argument should be the Excel file path
+     */
+    public static void main(String[] args) {
+        App app = new App();
+        
+        // Check if Excel file path is provided as command line argument
+        if (args.length == 0) {
+            System.out.println("Usage: java -jar automated-attendance-system.jar <excel-file-path>");
+            System.out.println("Or run with a default file path for testing purposes.");
+            
+            // For demonstration purposes, you can set a default file path here
+            // This is just for testing - in production, the file path should be provided as an argument
+            String defaultFilePath = "attendance.xlsx"; // Change this to your test file path
+            System.out.println("Using default file path for demonstration: " + defaultFilePath);
+            
+            boolean success = app.processAttendanceFile(defaultFilePath);
+            if (success) {
+                System.out.println("Attendance processing completed successfully!");
+            } else {
+                System.out.println("Attendance processing failed. Check logs for details.");
+            }
+        } else {
+            String excelFilePath = args[0];
+            System.out.println("Processing attendance file: " + excelFilePath);
+            
+            boolean success = app.processAttendanceFile(excelFilePath);
+            if (success) {
+                System.out.println("Attendance processing completed successfully!");
+            } else {
+                System.out.println("Attendance processing failed. Check logs for details.");
+            }
+        }
+    }
+}
