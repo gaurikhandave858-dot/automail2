@@ -25,6 +25,17 @@ public class App {
      * @return true if the process completes successfully, false otherwise
      */
     public boolean processAttendanceFile(String excelFilePath) {
+        // Use default recipients from Config
+        return processAttendanceFile(excelFilePath, Config.getReceiverEmails());
+    }
+    
+    /**
+     * Processes an Excel file and sends attendance summary email to specified recipients
+     * @param excelFilePath Path to the Excel file containing attendance data
+     * @param recipients List of email addresses to send the summary to
+     * @return true if the process completes successfully, false otherwise
+     */
+    public boolean processAttendanceFile(String excelFilePath, List<String> recipients) {
         LoggerUtil.logInfo("Starting attendance processing for file: " + excelFilePath);
         
         try {
@@ -53,10 +64,9 @@ public class App {
             
             // 4. Send email
             LoggerUtil.logInfo("Sending attendance summary email");
-            boolean emailSent = emailSender.sendEmail(Config.getEmailSubject(), summaryText);
+            boolean emailSent = emailSender.sendEmailToRecipients(Config.getEmailSubject(), summaryText, recipients);
             
             // Log email status
-            java.util.List<String> recipients = Config.getReceiverEmails();
             LoggerUtil.logEmailStatus(Config.getEmailSubject(), recipients, emailSent, 
                 emailSent ? "Email sent successfully" : "Failed to send email");
             

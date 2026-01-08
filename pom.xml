@@ -96,14 +96,7 @@
                 </executions>
             </plugin>
             
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    <mainClass>com.automatedattendance.SampleDataGenerator</mainClass>
-                </configuration>
-            </plugin>
+
         </plugins>
     </build>
 </project>

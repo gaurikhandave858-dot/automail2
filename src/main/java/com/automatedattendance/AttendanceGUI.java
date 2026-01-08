@@ -13,6 +13,7 @@ import java.io.File;
  */
 public class AttendanceGUI extends JFrame {
     private JTextField fileTextField;
+    private JTextField emailTextField;
     private JButton browseButton;
     private JButton processButton;
     private JTextArea logTextArea;
@@ -33,6 +34,9 @@ public class AttendanceGUI extends JFrame {
         
         fileTextField = new JTextField();
         fileTextField.setEditable(false);
+        
+        emailTextField = new JTextField();
+        emailTextField.setText("Enter recipient email addresses separated by commas");
         
         browseButton = new JButton("Browse Excel File");
         processButton = new JButton("Send Summary Email");
@@ -59,6 +63,12 @@ public class AttendanceGUI extends JFrame {
         topPanel.add(fileTextField, BorderLayout.CENTER);
         topPanel.add(browseButton, BorderLayout.EAST);
         
+        // Middle panel for email input
+        JPanel emailPanel = new JPanel(new BorderLayout());
+        emailPanel.setBorder(BorderFactory.createTitledBorder("Recipient Email(s)"));
+        emailPanel.add(new JLabel("Email(s): "), BorderLayout.WEST);
+        emailPanel.add(emailTextField, BorderLayout.CENTER);
+        
         // Center panel for process button
         JPanel centerPanel = new JPanel(new FlowLayout());
         centerPanel.add(processButton);
@@ -69,11 +79,13 @@ public class AttendanceGUI extends JFrame {
         bottomPanel.add(logScrollPane, BorderLayout.CENTER);
         
         add(topPanel, BorderLayout.NORTH);
-        add(centerPanel, BorderLayout.CENTER);
+        add(emailPanel, BorderLayout.CENTER);
+        add(centerPanel, BorderLayout.LINE_START);
         add(bottomPanel, BorderLayout.SOUTH);
         
         // Set preferred sizes
         topPanel.setPreferredSize(new Dimension(600, 60));
+        emailPanel.setPreferredSize(new Dimension(600, 60));
         bottomPanel.setPreferredSize(new Dimension(600, 300));
     }
     
@@ -135,12 +147,34 @@ public class AttendanceGUI extends JFrame {
             return;
         }
         
+        // Get recipient emails from the text field
+        String emailText = emailTextField.getText();
+        if (emailText == null || emailText.trim().isEmpty() || 
+            emailText.equals("Enter recipient email addresses separated by commas")) {
+            JOptionPane.showMessageDialog(this, 
+                "Please enter at least one recipient email address.", 
+                "No Recipients", 
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        // Parse the email addresses
+        java.util.List<String> recipients = parseEmailAddresses(emailText);
+        if (recipients.isEmpty()) {
+            JOptionPane.showMessageDialog(this, 
+                "No valid email addresses found. Please enter valid email addresses separated by commas.", 
+                "Invalid Email Format", 
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
         // Disable buttons during processing to prevent multiple clicks
         browseButton.setEnabled(false);
         processButton.setEnabled(false);
         
         // Add processing message to log
         logTextArea.append("Processing file: " + file.getName() + "\n");
+        logTextArea.append("Sending email to: " + String.join(", ", recipients) + "\n");
         logTextArea.append("This may take a moment...\n");
         logTextArea.setCaretPosition(logTextArea.getDocument().getLength());
         
@@ -148,7 +182,7 @@ public class AttendanceGUI extends JFrame {
         SwingWorker<Boolean, String> worker = new SwingWorker<Boolean, String>() {
             @Override
             protected Boolean doInBackground() throws Exception {
-                return attendanceApp.processAttendanceFile(filePath);
+                return attendanceApp.processAttendanceFile(filePath, recipients);
             }
             
             @Override
@@ -184,6 +218,42 @@ public class AttendanceGUI extends JFrame {
         };
         
         worker.execute();
+    }
+    
+    /**
+     * Parses email addresses from a comma-separated string
+     * @param emailText String containing email addresses separated by commas
+     * @return List of valid email addresses
+     */
+    private java.util.List<String> parseEmailAddresses(String emailText) {
+        java.util.List<String> emails = new java.util.ArrayList<>();
+        if (emailText == null || emailText.trim().isEmpty()) {
+            return emails;
+        }
+        
+        String[] parts = emailText.split(",");
+        for (String part : parts) {
+            String email = part.trim();
+            if (isValidEmail(email)) {
+                emails.add(email);
+            }
+        }
+        
+        return emails;
+    }
+    
+    /**
+     * Validates if a string is a valid email address
+     * @param email String to validate
+     * @return true if the string is a valid email address, false otherwise
+     */
+    private boolean isValidEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        
+        // Simple email validation using regex
+        return email.matches("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$");
     }
     
     /**

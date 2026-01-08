@@ -61,7 +61,8 @@ public class AttendanceProcessor {
             sb.append("----------------\n");
             for (Student student : students) {
                 if (student.isAbsent()) {
-                    sb.append("Name: ").append(student.getName()).append("\n");
+                    sb.append("P.no: ").append(student.getPNo())
+                      .append(", Name: ").append(student.getName()).append("\n");
                 }
             }
         }
@@ -87,7 +88,7 @@ public class AttendanceProcessor {
             this.attendancePercentage = attendancePercentage;
         }
         
-        // Getters
+        // getters
         public int getTotalStudents() {
             return totalStudents;
         }

@@ -19,13 +19,13 @@ public class Config {
     private static final boolean SMTP_TLS_ENABLED = true;
     
     // Email receivers - list of email addresses to send attendance summaries to
-    private static final List<String> RECEIVER_EMAILS = Arrays.asList(
-        "tusharkhandave16@gmail.com",
-        "bhumikamote05@gmail.com",
-        "choudharyjinal934@gmail.com" ,
-        "golemegha06@gmail.com",
-        "sairajkatkar18@outlook.com" ,
-        "atharvaaa1903@gmail.com");
+    private static List<String> RECEIVER_EMAILS = Arrays.asList(
+        "example@example.com");  // Default placeholder, will be updated by GUI
+    
+    // Setter method to update receiver emails dynamically
+    public static void setReceiverEmails(List<String> emails) {
+        RECEIVER_EMAILS = emails;
+    }
     
     // Email subject
     private static final String EMAIL_SUBJECT = "Attendance Summary Report";
