@@ -58,8 +58,8 @@ public class AttendanceGUI extends JFrame {
         
         // Top panel for file selection
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBorder(BorderFactory.createTitledBorder("File Selection"));
-        topPanel.add(new JLabel("Excel File: "), BorderLayout.WEST);
+        topPanel.setBorder(BorderFactory.createTitledBorder("Upload Excel File"));
+        topPanel.add(new JLabel("Select Attendance File: "), BorderLayout.WEST);
         topPanel.add(fileTextField, BorderLayout.CENTER);
         topPanel.add(browseButton, BorderLayout.EAST);
         

@@ -15,6 +15,7 @@ public class Config {
     
     // SMTP configuration
     private static final String SMTP_HOST = "smtp.gmail.com";
+    
     private static final int SMTP_PORT = 587;
     private static final boolean SMTP_TLS_ENABLED = true;
     
