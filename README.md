@@ -7,7 +7,7 @@ A Java-based application designed to simplify attendance management by automatic
 - Read attendance data from .xls and .xlsx Excel files
 - Validate Excel files for required columns (P.no, Name, Status)
 - Calculate total students, present count, and absent count
-- Generate attendance summary in text format
+- Generate attendance summary in HTML format with properly formatted tables
 - Send summary emails via SMTP with TLS security
 - Send email to dynamic recipients and a copy to the sender
 - Maintain logs including timestamp, summary, and email status
@@ -102,7 +102,7 @@ src/
 │           ├── Config.java           # Email configuration
 │           ├── Student.java          # Student data model
 │           ├── ExcelReader.java      # Excel file processing
-│           ├── AttendanceProcessor.java # Attendance calculations
+│           ├── AttendanceProcessor.java # Attendance calculations and HTML email generation
 │           ├── EmailSender.java      # Email sending functionality
 │           ├── LoggerUtil.java       # Logging functionality
 │           ├── App.java              # Main application controller

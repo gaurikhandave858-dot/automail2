@@ -201,7 +201,7 @@ public class EmailSender {
                 new InternetAddress[]{new InternetAddress(Config.getSenderEmail())});
             
             message.setSubject(subject);
-            message.setText(body);
+            message.setContent(body, "text/html; charset=utf-8");
             
             // Send the message
             Transport.send(message);
