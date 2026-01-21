@@ -6,6 +6,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.List;
+import javax.swing.UIManager;
+import java.awt.Font;
+import static javax.swing.SwingConstants.*;
 
 /**
  * Swing GUI for the Automated Attendance System.
@@ -29,64 +33,114 @@ public class AttendanceGUI extends JFrame {
     }
     
     private void initializeComponents() {
-        setTitle("Automated Attendance System");
+        setTitle("Automated Attendance System - Enhanced UI");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+        // Configure fonts and styles
+        Font titleFont = new Font(Font.SANS_SERIF, Font.BOLD, 18);
+        Font labelFont = new Font(Font.SANS_SERIF, Font.PLAIN, 14);
+        Font buttonFont = new Font(Font.SANS_SERIF, Font.BOLD, 16);
         
         fileTextField = new JTextField();
         fileTextField.setEditable(false);
+        fileTextField.setFont(labelFont);
         
         emailTextField = new JTextField();
-        emailTextField.setText("Enter recipient email addresses separated by commas");
+        emailTextField.setFont(labelFont);
         
+        // Style the buttons
         browseButton = new JButton("Browse Excel File");
+        browseButton.setFont(buttonFont);
+        browseButton.setBackground(new Color(70, 130, 180)); // Steel blue
+        browseButton.setForeground(Color.BLACK);
+        browseButton.setFocusPainted(false);
+        browseButton.setMargin(new Insets(8, 15, 8, 15));
+        
         processButton = new JButton("Send Summary Email");
+        processButton.setFont(buttonFont);
+        processButton.setBackground(new Color(34, 139, 34)); // Forest green
+        processButton.setForeground(Color.BLACK);
+        processButton.setFocusPainted(false);
+        processButton.setMargin(new Insets(8, 15, 8, 15));
         processButton.setEnabled(false); // Initially disabled until file is selected
         
+        // Style the log area
         logTextArea = new JTextArea(15, 50);
         logTextArea.setEditable(false);
-        logTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        logTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
+        logTextArea.setBackground(new Color(245, 245, 245)); // Light gray background
         logScrollPane = new JScrollPane(logTextArea);
+        logScrollPane.setBorder(BorderFactory.createLoweredBevelBorder());
         
-        // Add initial log message
-        logTextArea.append("Welcome to Automated Attendance System\n");
-        logTextArea.append("Please select an Excel file to process attendance.\n");
-        logTextArea.append("Required columns: P.no, Name, Status\n\n");
+        // Add styled initial log message
+        logTextArea.append("🌟 Welcome to Automated Attendance System\n");
+        logTextArea.append("📋 Please select an Excel file to process attendance.\n");
+        logTextArea.append("✅ Required columns: P.no, Name, Status\n\n");
     }
     
     private void setupLayout() {
-        setLayout(new BorderLayout());
-        
+        setLayout(new BorderLayout(10, 10)); // Add spacing between components
+            
+        // Create main container panel
+        JPanel mainContainer = new JPanel(new BorderLayout(10, 10));
+        mainContainer.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15)); // Add padding
+            
+        // Header panel
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(new Color(70, 130, 180)); // Steel blue background
+        JLabel headerLabel = new JLabel("📊 Automated Attendance Processing System", SwingConstants.CENTER);
+        headerLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 22)); // Increased font size
+        headerLabel.setForeground(Color.WHITE);
+        headerPanel.add(headerLabel, BorderLayout.CENTER);
+        headerPanel.setPreferredSize(new Dimension(750, 70)); // Increase header panel size
+            
         // Top panel for file selection
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBorder(BorderFactory.createTitledBorder("Upload Excel File"));
-        topPanel.add(new JLabel("Select Attendance File: "), BorderLayout.WEST);
+        JPanel topPanel = new JPanel(new BorderLayout(5, 5));
+        topPanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createEtchedBorder(), "📁 Select Excel File", 10, 20));
+        topPanel.add(new JLabel("Attendance File: "), BorderLayout.WEST);
         topPanel.add(fileTextField, BorderLayout.CENTER);
         topPanel.add(browseButton, BorderLayout.EAST);
-        
+            
         // Middle panel for email input
-        JPanel emailPanel = new JPanel(new BorderLayout());
-        emailPanel.setBorder(BorderFactory.createTitledBorder("Recipient Email(s)"));
-        emailPanel.add(new JLabel("Email(s): "), BorderLayout.WEST);
+        JPanel emailPanel = new JPanel(new BorderLayout(5, 5));
+        emailPanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createEtchedBorder(), "📧 Recipient Email(s)", 10, 20));
+        emailPanel.add(new JLabel("Email Addresses (comma separated): "), BorderLayout.WEST);
         emailPanel.add(emailTextField, BorderLayout.CENTER);
-        
-        // Center panel for process button
-        JPanel centerPanel = new JPanel(new FlowLayout());
-        centerPanel.add(processButton);
-        
+            
+        // Button panel for process button
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        buttonPanel.add(processButton);
+            
+        // Create upper panel combining file and email panels
+        JPanel inputPanel = new JPanel(new GridLayout(2, 1, 10, 10));
+        inputPanel.add(topPanel);
+        inputPanel.add(emailPanel);
+            
         // Bottom panel for logs
         JPanel bottomPanel = new JPanel(new BorderLayout());
-        bottomPanel.setBorder(BorderFactory.createTitledBorder("Log"));
+        bottomPanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createEtchedBorder(), "📜 Processing Log", 0, 0));
         bottomPanel.add(logScrollPane, BorderLayout.CENTER);
-        
-        add(topPanel, BorderLayout.NORTH);
-        add(emailPanel, BorderLayout.CENTER);
-        add(centerPanel, BorderLayout.LINE_START);
+            
+        // Add components to main container
+        mainContainer.add(inputPanel, BorderLayout.NORTH);
+        mainContainer.add(buttonPanel, BorderLayout.CENTER);
+            
+        // Add all to frame
+        add(headerPanel, BorderLayout.NORTH);
+        add(mainContainer, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
-        
+            
         // Set preferred sizes
-        topPanel.setPreferredSize(new Dimension(600, 60));
-        emailPanel.setPreferredSize(new Dimension(600, 60));
-        bottomPanel.setPreferredSize(new Dimension(600, 300));
+        topPanel.setPreferredSize(new Dimension(700, 80)); // Increased height
+        emailPanel.setPreferredSize(new Dimension(700, 80)); // Increased height
+        inputPanel.setPreferredSize(new Dimension(700, 180)); // Increased height
+        bottomPanel.setPreferredSize(new Dimension(700, 250));
+                
+        // Set frame properties
+        setPreferredSize(new Dimension(750, 650)); // Increased overall height
     }
     
     private void setupEventHandlers() {
@@ -109,6 +163,14 @@ public class AttendanceGUI extends JFrame {
         pack();
         setLocationRelativeTo(null); // Center the window
         setResizable(true);
+        
+        // Set window icon and appearance
+        try {
+            // Set system look and feel for better appearance
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            // If system look and feel is not available, use default
+        }
     }
     
     private void selectExcelFile() {
@@ -149,8 +211,7 @@ public class AttendanceGUI extends JFrame {
         
         // Get recipient emails from the text field
         String emailText = emailTextField.getText();
-        if (emailText == null || emailText.trim().isEmpty() || 
-            emailText.equals("Enter recipient email addresses separated by commas")) {
+        if (emailText == null || emailText.trim().isEmpty()) {
             JOptionPane.showMessageDialog(this, 
                 "Please enter at least one recipient email address.", 
                 "No Recipients", 
@@ -220,6 +281,7 @@ public class AttendanceGUI extends JFrame {
         worker.execute();
     }
     
+
     /**
      * Parses email addresses from a comma-separated string
      * @param emailText String containing email addresses separated by commas

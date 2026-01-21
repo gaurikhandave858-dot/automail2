@@ -3,6 +3,9 @@ package com.automatedattendance;
 import java.io.IOException;
 import java.util.List;
 
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 /**
  * Main controller class that manages the workflow:
  * upload → process → email → log
@@ -64,7 +67,9 @@ public class App {
             
             // 4. Send email
             LoggerUtil.logInfo("Sending attendance summary email");
-            boolean emailSent = emailSender.sendEmailToRecipients(Config.getEmailSubject(), summaryText, recipients);
+            
+            // Try to send email with authentication failure handling
+            boolean emailSent = attemptToSendEmail(Config.getEmailSubject(), summaryText, recipients);
             
             // Log email status
             LoggerUtil.logEmailStatus(Config.getEmailSubject(), recipients, emailSent, 
@@ -88,6 +93,62 @@ public class App {
             String errorMsg = "Unexpected error during attendance processing: " + e.getMessage();
             LoggerUtil.logError(errorMsg, e);
             System.err.println(errorMsg);
+            return false;
+        }
+    }
+    
+    /**
+     * Attempts to send email and handles authentication failures by prompting user to update credentials
+     */
+    private boolean attemptToSendEmail(String subject, String body, List<String> recipients) {
+        try {
+            return emailSender.sendEmailToRecipients(subject, body, recipients);
+        } catch (Exception e) {
+            // Check if the error is related to authentication
+            if (e.getMessage() != null && (e.getMessage().contains("535") || 
+                e.getMessage().contains("Authentication failed") || 
+                e.getMessage().contains("Username and Password not accepted"))) {
+                
+                // Show the password reset dialog synchronously
+                JFrame parentFrame = new JFrame();
+                parentFrame.setAlwaysOnTop(true);
+                PasswordResetDialog dialog = new PasswordResetDialog(parentFrame);
+                dialog.setVisible(true);
+                
+                if (dialog.isPasswordUpdated()) {
+                    int option = JOptionPane.showConfirmDialog(parentFrame,
+                        "Password updated successfully! Would you like to retry sending the email?",
+                        "Retry Email Sending",
+                        JOptionPane.YES_NO_OPTION);
+                    
+                    if (option == JOptionPane.YES_OPTION) {
+                        // Retry the email sending process
+                        try {
+                            Thread.sleep(1000); // Brief pause before retry
+                            boolean retryResult = emailSender.sendEmailToRecipients(subject, body, recipients);
+                            if (retryResult) {
+                                JOptionPane.showMessageDialog(parentFrame,
+                                    "Email sent successfully with new credentials!",
+                                    "Success",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                                return true; // Return true to indicate success
+                            } else {
+                                JOptionPane.showMessageDialog(parentFrame,
+                                    "Failed to send email with new credentials.",
+                                    "Email Sending Failed",
+                                    JOptionPane.ERROR_MESSAGE);
+                            }
+                        } catch (Exception retryException) {
+                            JOptionPane.showMessageDialog(parentFrame,
+                                "Failed to send email even with new credentials: " + retryException.getMessage(),
+                                "Email Sending Failed",
+                                JOptionPane.ERROR_MESSAGE);
+                        }
+                        return false; // Return false after failed retry
+                    }
+                }
+            }
+            // Return false to indicate sending failed
             return false;
         }
     }

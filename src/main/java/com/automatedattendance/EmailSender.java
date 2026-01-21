@@ -3,6 +3,11 @@ package com.automatedattendance;
 import java.util.List;
 import java.util.Properties;
 
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
 import jakarta.mail.Authenticator;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
@@ -18,6 +23,10 @@ import jakarta.mail.internet.MimeMessage;
  */
 public class EmailSender {
     
+    private boolean isConfigValid() {
+        return ConfigManager.getInstance().isConfigValid();
+    }
+    
     /**
      * Sends attendance summary email to all configured receivers and CC to sender
      * @param subject Subject of the email
@@ -27,32 +36,33 @@ public class EmailSender {
     public boolean sendEmail(String subject, String body) {
         try {
             // Validate configuration
-            if (!Config.isConfigValid()) {
+            if (!isConfigValid()) {
                 System.err.println("Email configuration is not valid. Please check Config.java");
                 return false;
             }
             
             // Set up properties for SMTP
             Properties props = new Properties();
-            props.put("mail.smtp.host", Config.getSmtpHost());
-            props.put("mail.smtp.port", Config.getSmtpPort());
+            ConfigManager configManager = ConfigManager.getInstance();
+            props.put("mail.smtp.host", configManager.getSmtpHost());
+            props.put("mail.smtp.port", configManager.getSmtpPort());
             props.put("mail.smtp.auth", "true");
-            props.put("mail.smtp.starttls.enable", Config.isSmtpTlsEnabled());
+            props.put("mail.smtp.starttls.enable", configManager.isSmtpTlsEnabled());
             
             // Create session with authentication
             Session session = Session.getInstance(props, new Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
                     return new PasswordAuthentication(
-                        Config.getSenderEmail(), 
-                        Config.getSenderAppPassword()
+                        configManager.getSenderEmail(), 
+                        configManager.getSenderAppPassword()
                     );
                 }
             });
             
             // Create message
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(Config.getSenderEmail()));
+            message.setFrom(new InternetAddress(configManager.getSenderEmail()));
             
             // Set recipients (to: receivers, cc: sender)
             List<String> receiverEmails = Config.getReceiverEmails();
@@ -64,7 +74,7 @@ public class EmailSender {
             
             // CC the sender
             message.setRecipients(Message.RecipientType.CC, 
-                new InternetAddress[]{new InternetAddress(Config.getSenderEmail())});
+                new InternetAddress[]{new InternetAddress(configManager.getSenderEmail())});
             
             message.setSubject(subject);
             message.setText(body);
@@ -76,7 +86,27 @@ public class EmailSender {
             return true;
             
         } catch (MessagingException e) {
-            System.err.println("Failed to send email: " + e.getMessage());
+            String errorMessage = e.getMessage();
+            System.err.println("Failed to send email: " + errorMessage);
+            
+            // Check if this is an authentication error
+            if (errorMessage.contains("535") && (errorMessage.contains("Username and Password not accepted") || 
+                errorMessage.contains("Authentication failed") || errorMessage.contains("Invalid login"))) {
+                // Show password reset dialog
+                SwingUtilities.invokeLater(() -> {
+                    JFrame parentFrame = (JFrame) JOptionPane.getFrameForComponent(new JLabel());
+                    PasswordResetDialog dialog = new PasswordResetDialog(parentFrame);
+                    dialog.setVisible(true);
+                    
+                    if (dialog.isPasswordUpdated()) {
+                        JOptionPane.showMessageDialog(parentFrame, 
+                            "Password has been updated. Please restart the application to use the new password.", 
+                            "Restart Required", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                    }
+                });
+            }
+            
             e.printStackTrace();
             return false;
         }
@@ -91,32 +121,33 @@ public class EmailSender {
     public boolean sendHtmlEmail(String subject, String htmlBody) {
         try {
             // Validate configuration
-            if (!Config.isConfigValid()) {
+            if (!isConfigValid()) {
                 System.err.println("Email configuration is not valid. Please check Config.java");
                 return false;
             }
             
             // Set up properties for SMTP
             Properties props = new Properties();
-            props.put("mail.smtp.host", Config.getSmtpHost());
-            props.put("mail.smtp.port", Config.getSmtpPort());
+            ConfigManager configManager = ConfigManager.getInstance();
+            props.put("mail.smtp.host", configManager.getSmtpHost());
+            props.put("mail.smtp.port", configManager.getSmtpPort());
             props.put("mail.smtp.auth", "true");
-            props.put("mail.smtp.starttls.enable", Config.isSmtpTlsEnabled());
+            props.put("mail.smtp.starttls.enable", configManager.isSmtpTlsEnabled());
             
             // Create session with authentication
             Session session = Session.getInstance(props, new Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
                     return new PasswordAuthentication(
-                        Config.getSenderEmail(), 
-                        Config.getSenderAppPassword()
+                        configManager.getSenderEmail(), 
+                        configManager.getSenderAppPassword()
                     );
                 }
             });
             
             // Create message
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(Config.getSenderEmail()));
+            message.setFrom(new InternetAddress(configManager.getSenderEmail()));
             
             // Set recipients (to: receivers, cc: sender)
             List<String> receiverEmails = Config.getReceiverEmails();
@@ -128,7 +159,7 @@ public class EmailSender {
             
             // CC the sender
             message.setRecipients(Message.RecipientType.CC, 
-                new InternetAddress[]{new InternetAddress(Config.getSenderEmail())});
+                new InternetAddress[]{new InternetAddress(configManager.getSenderEmail())});
             
             message.setSubject(subject);
             message.setContent(htmlBody, "text/html; charset=utf-8");
@@ -140,7 +171,27 @@ public class EmailSender {
             return true;
             
         } catch (MessagingException e) {
-            System.err.println("Failed to send HTML email: " + e.getMessage());
+            String errorMessage = e.getMessage();
+            System.err.println("Failed to send HTML email: " + errorMessage);
+            
+            // Check if this is an authentication error
+            if (errorMessage.contains("535") && (errorMessage.contains("Username and Password not accepted") || 
+                errorMessage.contains("Authentication failed") || errorMessage.contains("Invalid login"))) {
+                // Show password reset dialog
+                SwingUtilities.invokeLater(() -> {
+                    JFrame parentFrame = (JFrame) JOptionPane.getFrameForComponent(new JLabel());
+                    PasswordResetDialog dialog = new PasswordResetDialog(parentFrame);
+                    dialog.setVisible(true);
+                    
+                    if (dialog.isPasswordUpdated()) {
+                        JOptionPane.showMessageDialog(parentFrame, 
+                            "Password has been updated. Please restart the application to use the new password.", 
+                            "Restart Required", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                    }
+                });
+            }
+            
             e.printStackTrace();
             return false;
         }
@@ -156,7 +207,7 @@ public class EmailSender {
     public boolean sendEmailToRecipients(String subject, String body, List<String> recipients) {
         try {
             // Validate configuration
-            if (!Config.isConfigValid()) {
+            if (!isConfigValid()) {
                 System.err.println("Email configuration is not valid. Please check Config.java");
                 return false;
             }
@@ -169,25 +220,26 @@ public class EmailSender {
             
             // Set up properties for SMTP
             Properties props = new Properties();
-            props.put("mail.smtp.host", Config.getSmtpHost());
-            props.put("mail.smtp.port", Config.getSmtpPort());
+            ConfigManager configManager = ConfigManager.getInstance();
+            props.put("mail.smtp.host", configManager.getSmtpHost());
+            props.put("mail.smtp.port", configManager.getSmtpPort());
             props.put("mail.smtp.auth", "true");
-            props.put("mail.smtp.starttls.enable", Config.isSmtpTlsEnabled());
+            props.put("mail.smtp.starttls.enable", configManager.isSmtpTlsEnabled());
             
             // Create session with authentication
             Session session = Session.getInstance(props, new Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
                     return new PasswordAuthentication(
-                        Config.getSenderEmail(), 
-                        Config.getSenderAppPassword()
+                        configManager.getSenderEmail(), 
+                        configManager.getSenderAppPassword()
                     );
                 }
             });
             
             // Create message
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(Config.getSenderEmail()));
+            message.setFrom(new InternetAddress(configManager.getSenderEmail()));
             
             // Set recipients (to: provided recipients, cc: sender)
             InternetAddress[] toAddresses = new InternetAddress[recipients.size()];
@@ -198,7 +250,7 @@ public class EmailSender {
             
             // CC the sender
             message.setRecipients(Message.RecipientType.CC, 
-                new InternetAddress[]{new InternetAddress(Config.getSenderEmail())});
+                new InternetAddress[]{new InternetAddress(configManager.getSenderEmail())});
             
             message.setSubject(subject);
             message.setContent(body, "text/html; charset=utf-8");
@@ -210,7 +262,27 @@ public class EmailSender {
             return true;
             
         } catch (MessagingException e) {
-            System.err.println("Failed to send email: " + e.getMessage());
+            String errorMessage = e.getMessage();
+            System.err.println("Failed to send email: " + errorMessage);
+            
+            // Check if this is an authentication error
+            if (errorMessage.contains("535") && (errorMessage.contains("Username and Password not accepted") || 
+                errorMessage.contains("Authentication failed") || errorMessage.contains("Invalid login"))) {
+                // Show password reset dialog
+                SwingUtilities.invokeLater(() -> {
+                    JFrame parentFrame = (JFrame) JOptionPane.getFrameForComponent(new JLabel());
+                    PasswordResetDialog dialog = new PasswordResetDialog(parentFrame);
+                    dialog.setVisible(true);
+                    
+                    if (dialog.isPasswordUpdated()) {
+                        JOptionPane.showMessageDialog(parentFrame, 
+                            "Password has been updated. Please restart the application to use the new password.", 
+                            "Restart Required", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                    }
+                });
+            }
+            
             e.printStackTrace();
             return false;
         }

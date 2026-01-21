@@ -21,7 +21,7 @@ public class Config {
     
     // Email receivers - list of email addresses to send attendance summaries to
     private static List<String> RECEIVER_EMAILS = Arrays.asList(
-        "example@example.com");  // Default placeholder, will be updated by GUI
+        "gaurikhandave858@gmail.com");  // Update with actual recipient emails
     
     // Setter method to update receiver emails dynamically
     public static void setReceiverEmails(List<String> emails) {
