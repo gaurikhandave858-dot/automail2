@@ -10,6 +10,7 @@ import java.util.List;
 import javax.swing.UIManager;
 import java.awt.Font;
 import static javax.swing.SwingConstants.*;
+import javax.swing.border.TitledBorder;
 
 /**
  * Swing GUI for the Automated Attendance System.
@@ -67,7 +68,7 @@ public class AttendanceGUI extends JFrame {
         // Style the log area
         logTextArea = new JTextArea(15, 50);
         logTextArea.setEditable(false);
-        logTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
+        logTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         logTextArea.setBackground(new Color(245, 245, 245)); // Light gray background
         logScrollPane = new JScrollPane(logTextArea);
         logScrollPane.setBorder(BorderFactory.createLoweredBevelBorder());
@@ -97,16 +98,20 @@ public class AttendanceGUI extends JFrame {
         // Top panel for file selection
         JPanel topPanel = new JPanel(new BorderLayout(5, 5));
         topPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "📁 Select Excel File", 10, 20));
-        topPanel.add(new JLabel("Attendance File: "), BorderLayout.WEST);
+            BorderFactory.createEtchedBorder(), "Select Excel File", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font(Font.SANS_SERIF, Font.BOLD, 14)));
+        JLabel fileLabel = new JLabel("Attendance File: ");
+        fileLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        topPanel.add(fileLabel, BorderLayout.WEST);
         topPanel.add(fileTextField, BorderLayout.CENTER);
         topPanel.add(browseButton, BorderLayout.EAST);
             
         // Middle panel for email input
         JPanel emailPanel = new JPanel(new BorderLayout(5, 5));
         emailPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "📧 Recipient Email(s)", 10, 20));
-        emailPanel.add(new JLabel("Email Addresses (comma separated): "), BorderLayout.WEST);
+            BorderFactory.createEtchedBorder(), "Email addresses (comma separated)", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font(Font.SANS_SERIF, Font.BOLD, 14)));
+        JLabel emailLabel = new JLabel("Email Addresses (comma separated): ");
+        emailLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        emailPanel.add(emailLabel, BorderLayout.WEST);
         emailPanel.add(emailTextField, BorderLayout.CENTER);
             
         // Button panel for process button
@@ -121,7 +126,7 @@ public class AttendanceGUI extends JFrame {
         // Bottom panel for logs
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "📜 Processing Log", 0, 0));
+            BorderFactory.createEtchedBorder(), "Processing Log", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font(Font.SANS_SERIF, Font.BOLD, 14)));
         bottomPanel.add(logScrollPane, BorderLayout.CENTER);
             
         // Add components to main container
