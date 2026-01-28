@@ -248,7 +248,7 @@ public class AttendanceGUI extends JFrame {
         SwingWorker<Boolean, String> worker = new SwingWorker<Boolean, String>() {
             @Override
             protected Boolean doInBackground() throws Exception {
-                return attendanceApp.processAttendanceFile(filePath, recipients);
+                return attendanceApp.processFlexibleAttendanceFile(filePath, recipients);
             }
             
             @Override

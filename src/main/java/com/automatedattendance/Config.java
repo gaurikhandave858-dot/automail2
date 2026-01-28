@@ -11,7 +11,7 @@ public class Config {
     
     // Email sender configuration
     private static final String SENDER_EMAIL = "gaurikhandave858@gmail.com";
-    private static final String SENDER_APP_PASSWORD = "xyflmraxlagbwiej";
+    private static final String SENDER_APP_PASSWORD = "waiijnrxpetpfqhq";
     
     // SMTP configuration
     private static final String SMTP_HOST = "smtp.gmail.com";

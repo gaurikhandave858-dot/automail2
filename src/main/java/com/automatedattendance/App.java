@@ -13,13 +13,83 @@ import javax.swing.JOptionPane;
 public class App {
     
     private ExcelReader excelReader;
+    private FlexibleExcelReader flexibleExcelReader;
     private AttendanceProcessor attendanceProcessor;
     private EmailSender emailSender;
+    private FlexibleEmailGenerator flexibleEmailGenerator;
     
     public App() {
         this.excelReader = new ExcelReader();
+        this.flexibleExcelReader = new FlexibleExcelReader();
         this.attendanceProcessor = new AttendanceProcessor();
         this.emailSender = new EmailSender();
+        this.flexibleEmailGenerator = new FlexibleEmailGenerator();
+    }
+    
+    /**
+     * Processes an Excel file using flexible column detection and sends detailed tabular email
+     * @param excelFilePath Path to the Excel file containing attendance data
+     * @param recipients List of email addresses to send the summary to
+     * @return true if the process completes successfully, false otherwise
+     */
+    public boolean processFlexibleAttendanceFile(String excelFilePath, List<String> recipients) {
+        LoggerUtil.logInfo("Starting flexible attendance processing for file: " + excelFilePath);
+        
+        try {
+            // 1. Validate Excel file with flexible reader
+            LoggerUtil.logInfo("Validating Excel file with flexible reader: " + excelFilePath);
+            if (!flexibleExcelReader.validateFlexibleExcelFile(excelFilePath)) {
+                String errorMsg = "Excel file validation failed with flexible reader.";
+                LoggerUtil.logError(errorMsg);
+                System.err.println(errorMsg);
+                return false;
+            }
+            LoggerUtil.logInfo("Excel file validation successful with flexible reader");
+            
+            // 2. Read Excel file with flexible column detection
+            LoggerUtil.logInfo("Reading Excel file with flexible detection: " + excelFilePath);
+            FlexibleExcelReader.FlexibleAttendanceData attendanceData = flexibleExcelReader.readFlexibleExcelFile(excelFilePath);
+            List<Student> students = attendanceData.getStudents();
+            
+            LoggerUtil.logExcelProcessing(excelFilePath, students.size(), 
+                "Successfully read " + students.size() + " student records with flexible detection");
+            LoggerUtil.logInfo("Successfully read " + students.size() + " student records from Excel file");
+            
+            // 3. Generate flexible HTML email
+            LoggerUtil.logInfo("Generating flexible tabular email");
+            String htmlEmailContent = flexibleEmailGenerator.generateFlexibleEmail(attendanceData);
+            LoggerUtil.logInfo("Flexible email content generated successfully");
+            
+            // 4. Send email
+            LoggerUtil.logInfo("Sending flexible attendance summary email");
+            
+            // Try to send email with authentication failure handling
+            boolean emailSent = attemptToSendEmail(Config.getEmailSubject(), htmlEmailContent, recipients);
+            
+            // Log email status
+            LoggerUtil.logEmailStatus(Config.getEmailSubject(), recipients, emailSent, 
+                emailSent ? "Flexible email sent successfully" : "Failed to send flexible email");
+            
+            if (emailSent) {
+                LoggerUtil.logInfo("Flexible attendance summary email sent successfully to " + 
+                    recipients.size() + " receivers");
+                return true;
+            } else {
+                LoggerUtil.logError("Failed to send flexible attendance summary email");
+                return false;
+            }
+            
+        } catch (IOException e) {
+            String errorMsg = "Error processing Excel file with flexible reader: " + e.getMessage();
+            LoggerUtil.logError(errorMsg, e);
+            System.err.println(errorMsg);
+            return false;
+        } catch (Exception e) {
+            String errorMsg = "Unexpected error during flexible attendance processing: " + e.getMessage();
+            LoggerUtil.logError(errorMsg, e);
+            System.err.println(errorMsg);
+            return false;
+        }
     }
     
     /**
