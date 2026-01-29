@@ -1,4 +1,4 @@
-package com.automatedattendance;
+ package com.automatedattendance;
 
 import java.util.HashSet;
 import java.util.List;
@@ -49,8 +49,7 @@ public class FlexibleEmailGenerator {
         html.append("    </style>\n");
         html.append("</head>\n");
         html.append("<body>\n");
-        html.append("    <div class=\"container\">\n");
-        
+        html.append("    <div class=\"container\">\n");        
         // Header
         html.append("        <div class=\"header\">\n");
         html.append("            <h1>📊 Attendance Summary Report</h1>\n");
@@ -91,7 +90,7 @@ public class FlexibleEmailGenerator {
             html.append("                    <tr style=\"background-color: #e74c3c; color: white;\">\n");
             html.append("                        <th style=\"padding: 8px; border: 1px solid #ddd;\">Name</th>\n");
             html.append("                        <th style=\"padding: 8px; border: 1px solid #ddd;\">Ticket/P.No</th>\n");
-            html.append("                        <th style=\"padding: 8px; border: 1px solid #ddd;\">Trade/Shop/Department</th>\n");
+            html.append("                        <th style=\"padding: 8px; border: 1px solid #ddd;\">Shop</th>\n");
             html.append("                    </tr>\n");
             html.append("                </thead>\n");
             html.append("                <tbody>\n");
