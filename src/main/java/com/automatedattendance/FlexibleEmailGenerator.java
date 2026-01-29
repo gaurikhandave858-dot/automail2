@@ -95,10 +95,33 @@ public class FlexibleEmailGenerator {
             html.append("                </thead>\n");
             html.append("                <tbody>\n");
             
-            // Find the shop/dept column header
+            // Find the shop/dept column header - first check if it exists in the column mappings
             List<String> originalHeaders = attendanceData.getOriginalHeaders();
-            String pNoHeader = findEssentialHeader(originalHeaders, new String[]{"p.no", "ticket no", "ticket_no", "pno", "roll no", "id", "reg no"});
-            String shopHeader = findEssentialHeader(originalHeaders, new String[]{"shop name", "shop", "department", "trade", "dept", "location", "branch", "unit", "workshop", "division", "area", "zone", "site", "center", "place"});
+            Map<String, Integer> columnMappings = attendanceData.getColumnMappings();
+            
+            // Get the original header names from column mappings
+            String pNoHeader = null;
+            String shopHeader = null;
+            
+            // Find original header names based on column mappings
+            for (Map.Entry<String, Integer> entry : columnMappings.entrySet()) {
+                if ("P.no".equals(entry.getKey())) {
+                    int columnIndex = entry.getValue();
+                    if (columnIndex < originalHeaders.size()) {
+                        pNoHeader = originalHeaders.get(columnIndex);
+                    }
+                } else if ("Shop".equals(entry.getKey())) {
+                    int columnIndex = entry.getValue();
+                    if (columnIndex < originalHeaders.size()) {
+                        shopHeader = originalHeaders.get(columnIndex);
+                    }
+                }
+            }
+            
+            System.out.println("DEBUG: Original headers in Excel: " + originalHeaders);
+            System.out.println("DEBUG: Column mappings: " + columnMappings);
+            System.out.println("DEBUG: P.No header found: " + pNoHeader);
+            System.out.println("DEBUG: Shop header found: " + shopHeader);
             
             List<Map<String, String>> rawData = attendanceData.getRawData();
             
@@ -106,11 +129,17 @@ public class FlexibleEmailGenerator {
                 if (student.isAbsent()) {
                     // Find the corresponding row in raw data to get shop/department info
                     String shopValue = "";
+                    System.out.println("DEBUG: Looking for student P.No: " + student.getPNo());
+                    
                     for (Map<String, String> row : rawData) {
                         String pNoValue = row.get(pNoHeader);
+                        System.out.println("DEBUG: Comparing with row P.No: " + pNoValue);
+                        
                         if (pNoValue != null && pNoValue.equals(student.getPNo())) {
                             if (shopHeader != null) {
+                                // Get the shop value using the original header name
                                 shopValue = row.get(shopHeader);
+                                System.out.println("DEBUG: Found shop value: " + shopValue + " for header: " + shopHeader);
                             }
                             break;
                         }
